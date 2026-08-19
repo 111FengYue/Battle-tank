@@ -161,9 +161,10 @@
   const TANK = 34;              // 坦克边长
   const HALF = TANK / 2;
   const BULLET = 6;             // 子弹边长
-  const PLAYER_SPEED = 2.4;
-  const ENEMY_SPEED = 1.4;
-  const BULLET_SPEED = 6;
+  const PLAYER_SPEED = 1.6;
+  const ENEMY_SPEED = 0.9;
+  const BULLET_SPEED = 4;
+  const STEP = 1000 / 60;           // 固定 60 FPS 逻辑步长（帧率无关）
   const TOTAL_ENEMIES = 15;     // 每关敌军总数
   const MAX_ON_SCREEN = 4;
 
@@ -222,6 +223,7 @@
   let gameOver = false;
   let keys = {};
   let lastTime = 0;
+  let accumulator = 0;
   let spawnTimer = 0;
   let spawnCooldown = 1200;
 
@@ -291,6 +293,7 @@
     overlay.style.display = 'none';
     resetLevel();
     running = true; paused = false;
+    accumulator = 0;
     lastTime = performance.now();
     requestAnimationFrame(loop);
   }
@@ -415,7 +418,7 @@
     return false;
   }
 
-  function enemyThink(e) {
+  function enemyThink(e, dt) {
     // 敌人 AI：随机方向 + 随机射击
     if (e.think <= 0) {
       const dirs = DIR_NAMES.filter(d => {
@@ -432,7 +435,7 @@
     }
     const v = DIRS[e.thinkDir];
     e.dir = e.thinkDir;
-    e.think -= 16;
+    e.think -= dt;
     moveTank(e, v.x, v.y, false);
     if (Math.random() < 0.02) {
       e.cooldown = 600;
@@ -761,12 +764,16 @@
 
   // ---------- 主循环 ----------
   function loop(now) {
-    const dt = Math.min(now - lastTime, 40);
+    const frame = Math.min(now - lastTime, 100);
     lastTime = now;
     if (!running) return;
 
     if (!paused) {
-      update(dt);
+      accumulator += frame;
+      while (accumulator >= STEP) {
+        update(STEP);
+        accumulator -= STEP;
+      }
     }
     render();
     requestAnimationFrame(loop);
@@ -797,7 +804,7 @@
       if (!e.alive) continue;
       if (e.invuln > 0) e.invuln -= dt;
       if (e.cooldown > 0) e.cooldown -= dt;
-      enemyThink(e);
+      enemyThink(e, dt);
     }
 
     updateBullets(dt);
