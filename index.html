@@ -161,7 +161,7 @@
   const TANK = 34;              // 坦克边长
   const HALF = TANK / 2;
   const BULLET = 6;             // 子弹边长
-  const PLAYER_SPEED = 1.6;
+  const PLAYER_SPEED = 1.2;
   const ENEMY_SPEED = 0.9;
   const BULLET_SPEED = 4;
   const STEP = 1000 / 60;           // 固定 60 FPS 逻辑步长（帧率无关）
@@ -330,7 +330,7 @@
   // ---------- 玩家 ----------
   function playerShoot() {
     if (!player || !player.alive || player.cooldown > 0) return;
-    player.cooldown = 320;
+    player.cooldown = 180;
     spawnBullet(player, 'player');
     sfxShoot();
   }
